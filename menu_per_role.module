@@ -9,7 +9,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Implements hook_form_BASE_FORM_ID_alter().
  */
-function menu_per_role_form_alter(&$form, FormStateInterface $form_state) {
+function menu_per_role_form_alter(&$form, &$form_state) {
   if ($form['#form_id'] == 'menu_link_content_menu_link_content_form' || $form['#form_id'] == 'menu_link_edit') {
     // Handle Menulink Add and Update.
     if (!(\Drupal::currentUser()->hasPermission('administer menu_per_role'))) {
@@ -18,13 +18,15 @@ function menu_per_role_form_alter(&$form, FormStateInterface $form_state) {
 
     $default_value_roles = array();
     $default_value_hide_from_roles = array();
-
+  
     // To get the Plugin ID of menu item.
-    $menu_link = $form_state->getFormObject()->getEntity();
-    if ($menu_link) {
-      $mlid = $menu_link->getPluginId();
-      $default_value_roles = _menu_per_role_get_roles($mlid, 0);
-      $default_value_hide_from_roles = _menu_per_role_get_roles($mlid, 1);
+    if (property_exists($form_state->getFormObject(), 'entity')) {
+      $menu_link = $form_state->getFormObject()->getEntity();
+      if ($menu_link) {
+        $mlid = $menu_link->getPluginId();
+        $default_value_roles = _menu_per_role_get_roles($mlid, 0);
+        $default_value_hide_from_roles = _menu_per_role_get_roles($mlid, 1);
+      }
     }
     $form['menu_per_role'] = array(
       '#type' => 'fieldset',
