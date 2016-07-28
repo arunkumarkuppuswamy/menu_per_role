@@ -1,7 +1,6 @@
 name: Menu Per Role
 type: module
 core: 8.x
-version: VERSION
 package: Menu
 description: 'Allows restricting access to menu items per role.'
 dependencies:
