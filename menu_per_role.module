@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Allows restricting access to menu items per role.
@@ -9,8 +10,8 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Implements hook_form_BASE_FORM_ID_alter().
  */
-function menu_per_role_form_alter(&$form, &$form_state) {
-  if ($form['#form_id'] == 'menu_link_content_menu_link_content_form' || $form['#form_id'] == 'menu_link_edit') {
+function menu_per_role_form_menu_link_content_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
+  if ($form_id == 'menu_link_content_menu_link_content_form') {
     // Handle Menulink Add and Update.
     if (!(\Drupal::currentUser()->hasPermission('administer menu_per_role'))) {
       return;
@@ -18,11 +19,10 @@ function menu_per_role_form_alter(&$form, &$form_state) {
 
     $default_value_roles = array();
     $default_value_hide_from_roles = array();
-  
     // To get the Plugin ID of menu item.
     if (property_exists($form_state->getFormObject(), 'entity')) {
       $menu_link = $form_state->getFormObject()->getEntity();
-      if ($menu_link) {
+      if (is_object($menu_link)) {
         $mlid = $menu_link->getPluginId();
         $default_value_roles = _menu_per_role_get_roles($mlid, 0);
         $default_value_hide_from_roles = _menu_per_role_get_roles($mlid, 1);
@@ -53,7 +53,13 @@ function menu_per_role_form_alter(&$form, &$form_state) {
     );
     $form['actions']['submit']['#submit'][] = 'menu_per_role_menu_submit_handler';
   }
-  elseif ($form['#form_id'] == "menu_link_content_menu_link_content_delete_form") {
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function menu_per_role_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
+  if ($form_id == "menu_link_content_menu_link_content_delete_form") {
     // Handle Menulink delete.
     $form['actions']['submit']['#submit'][] = 'menu_per_role_menu_delete_handler';
   }
@@ -133,7 +139,7 @@ function _menu_per_role_access($mlid) {
     return NULL;
   }
 
-  $arg  = explode('/', \Drupal::request()->getpathInfo());
+  $arg = explode('/', \Drupal::request()->getpathInfo());
   // If menu is being edited allow user to see it in full.
   if ($arg[1] == 'admin' && $arg[2] == 'structure' && $arg[3] == 'menu') {
     return NULL;
